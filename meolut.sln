@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{38E5E077-6BC0-4CD4-843C-EF8A156C9699}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meolut.RinexClient", "src\Meolut.RinexClient\Meolut.RinexClient.csproj", "{5560C93C-A511-4642-AC42-1E222A8B8C42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meolut.Core", "src\Meolut.Core\Meolut.Core.csproj", "{B416FEB3-C48A-417C-B464-0897B53E3591}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,19 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5560C93C-A511-4642-AC42-1E222A8B8C42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5560C93C-A511-4642-AC42-1E222A8B8C42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5560C93C-A511-4642-AC42-1E222A8B8C42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5560C93C-A511-4642-AC42-1E222A8B8C42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B416FEB3-C48A-417C-B464-0897B53E3591}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B416FEB3-C48A-417C-B464-0897B53E3591}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B416FEB3-C48A-417C-B464-0897B53E3591}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B416FEB3-C48A-417C-B464-0897B53E3591}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5560C93C-A511-4642-AC42-1E222A8B8C42} = {38E5E077-6BC0-4CD4-843C-EF8A156C9699}
+		{B416FEB3-C48A-417C-B464-0897B53E3591} = {38E5E077-6BC0-4CD4-843C-EF8A156C9699}
 	EndGlobalSection
 EndGlobal
