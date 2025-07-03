@@ -11,4 +11,5 @@ public class RinexConfiguration
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromMinutes(5);
     public bool AutoDownload { get; set; } = true;
     public int DaysToDownload { get; set; } = 1; // How many days back to download
+    public bool DryRun { get; set; } = false; // For testing without actual downloads
 }

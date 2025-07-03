@@ -78,7 +78,8 @@ public class RinexDownloader : IRinexDownloader
                     await using var fileStream = File.Create(filePath);
                     await response.Content.CopyToAsync(fileStream, cancellationToken);
                     
-                    _logger.LogInformation("Successfully downloaded {FileName}", fileName);
+                    _logger.LogInformation("Successfully downloaded {FileName}, size: {Size} bytes", 
+                        fileName, new FileInfo(filePath).Length);
                     
                     // Extract .gz file
                     await ExtractGzipFileAsync(filePath, extractedPath, cancellationToken);
@@ -86,11 +87,30 @@ public class RinexDownloader : IRinexDownloader
                     // Remove compressed file after extraction
                     File.Delete(filePath);
                     
+                    _logger.LogInformation("Successfully extracted to {ExtractedPath}, size: {Size} bytes", 
+                        extractedPath, new FileInfo(extractedPath).Length);
+                    
                     return extractedPath;
                 }
                 
-                _logger.LogWarning("Failed to download {Url}, status: {StatusCode}", url, response.StatusCode);
+                _logger.LogWarning("Failed to download {Url}, status: {StatusCode} - {ReasonPhrase}", 
+                    url, response.StatusCode, response.ReasonPhrase);
                 break;
+            }
+            catch (HttpRequestException httpEx)
+            {
+                _logger.LogWarning(httpEx, "HTTP error downloading {Url} (attempt {Attempt}): {Message}", 
+                    url, attempt + 1, httpEx.Message);
+                
+                if (attempt < _config.MaxRetryAttempts - 1)
+                {
+                    attempt++;
+                    await Task.Delay(_config.RetryDelay, cancellationToken);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to download {fileName} after {_config.MaxRetryAttempts} attempts. Network error: {httpEx.Message}", httpEx);
+                }
             }
             catch (Exception ex) when (attempt < _config.MaxRetryAttempts - 1)
             {
