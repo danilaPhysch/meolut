@@ -17,6 +17,11 @@ bld/
 [Oo]ut/
 [Ll]ogs/
 
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
 # Rider
 .idea/
 *.sln.iml
