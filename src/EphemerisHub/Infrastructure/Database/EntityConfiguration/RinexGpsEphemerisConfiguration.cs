@@ -35,5 +35,11 @@ public class RinexGpsEphemerisConfiguration : IEntityTypeConfiguration<RinexGpsE
         builder.Property(e => e.Omega).HasPrecision(15, 12);
         builder.Property(e => e.OmegaDot).HasPrecision(15, 12);
         builder.Property(e => e.Idot).HasPrecision(15, 12);
+        builder.Property(e => e.Iodc).HasPrecision(15, 12);
+        builder.Property(e => e.SvAccuracy).HasPrecision(15, 12);
+        builder.Property(e => e.SvHealth).HasPrecision(15, 12);
+        builder.Property(e => e.Tgd).HasPrecision(15, 12);
+        builder.Property(e => e.TransmissionTime).HasPrecision(15, 12);
+        builder.Property(e => e.FitInterval).HasPrecision(15, 12);
     }
 }
