@@ -2,7 +2,7 @@ namespace EphemerisHub.Models;
 
 public abstract class RinexEphemeris
 {
-    public string SatelliteSystem { get; set; } // G, R, E, C
+    public string SatelliteSystem { get; set; } = string.Empty; // G, R, E, C
     public int SatellitePrn { get; set; }
     public DateTime TimeOfClock { get; set; }
 
