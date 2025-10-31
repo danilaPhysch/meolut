@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using TleApi.Configuration;
 using TleApi.Models;
 
 namespace TleApi.Data;
@@ -10,10 +12,10 @@ public class TleDbContext : DbContext
 {
     private readonly string _tableName;
 
-    public TleDbContext(DbContextOptions<TleDbContext> options, string tableName = "tle") 
+    public TleDbContext(DbContextOptions<TleDbContext> options, IOptions<TleOptions> tleOptions) 
         : base(options)
     {
-        _tableName = tableName;
+        _tableName = tleOptions.Value.TableName;
     }
 
     public DbSet<TleEntity> TleData => Set<TleEntity>();
