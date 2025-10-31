@@ -19,12 +19,9 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
 
                 // Получаем поток байт
                 await using var stream = await httpClient.GetStreamAsync(url);
-                using var memory = new MemoryStream();
-                await stream.CopyToAsync(memory);
-                memory.Position = 0;
 
-                // Читаем текст из памяти построчно
-                using var reader = new StreamReader(memory, Encoding.UTF8, leaveOpen: false);
+                // Читаем текст из потока построчно
+                using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: false);
 
                 static IEnumerable<string> StreamLines(StreamReader r)
                 {
