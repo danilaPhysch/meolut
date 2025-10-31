@@ -1,6 +1,30 @@
 @TleApi_HostAddress = http://localhost:5015
 
-GET {{TleApi_HostAddress}}/weatherforecast/
+### Get all TLE data (with pagination)
+GET {{TleApi_HostAddress}}/api/tle?page=1&pageSize=10
 Accept: application/json
 
-###
+### Get TLE data for GPS system
+GET {{TleApi_HostAddress}}/api/tle/GPS?page=1&pageSize=10
+Accept: application/json
+
+### Get TLE data for a specific satellite (GPS PRN G01)
+GET {{TleApi_HostAddress}}/api/tle/GPS/G01
+Accept: application/json
+
+### Get TLE data for a specific satellite at a specific time
+GET {{TleApi_HostAddress}}/api/tle/GPS/G01/2024-10-30T12:00:00Z
+Accept: application/json
+
+### Get filtered TLE data by system and datetime
+GET {{TleApi_HostAddress}}/api/tle?system=GLONASS&datetime=2024-10-30T00:00:00Z&page=1&pageSize=20
+Accept: application/json
+
+### Get TLE data for GALILEO system
+GET {{TleApi_HostAddress}}/api/tle/GALILEO
+Accept: application/json
+
+### Get TLE data for BEIDOU system with datetime filter
+GET {{TleApi_HostAddress}}/api/tle/BEIDOU?datetime=2024-10-30T12:00:00Z
+Accept: application/json
+

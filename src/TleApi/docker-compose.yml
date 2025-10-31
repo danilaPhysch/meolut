@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: meolut-postgres
+    environment:
+      POSTGRES_DB: meolut
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tleapi:
+    build:
+      context: ../..
+      dockerfile: src/TleApi/Dockerfile
+    container_name: meolut-tleapi
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Host=postgres;Database=meolut;Username=postgres;Password=postgres
+      - Tle__TableName=tle
+      - Swagger__Enabled=true
+    ports:
+      - "5000:8080"
+
+volumes:
+  postgres_data:
