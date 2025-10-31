@@ -17,10 +17,8 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
             {
                 logger.LogInformation("Downloading tle from {Url}", url);
 
-                // Получаем поток байт
                 await using var stream = await httpClient.GetStreamAsync(url);
 
-                // Читаем текст из потока построчно
                 using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: false);
 
                 static IEnumerable<string> StreamLines(StreamReader r)
@@ -53,13 +51,16 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
         }
 
         var meosarTles = allTles
-            .Where(tle => meosarSatellitesSettings.AllNoradIds.TryGetValue(tle.NoradId, out _))
             .Select(tle =>
             {
-                meosarSatellitesSettings.AllNoradIds.TryGetValue(tle.NoradId, out var csSatNum);
-                tle.CsSatNum = csSatNum;
-                return tle;
+                if (meosarSatellitesSettings.AllNoradIds.TryGetValue(tle.NoradId, out var csSatNum))
+                {
+                    tle.CsSatNum = csSatNum;
+                    return tle;
+                }
+                return null;
             })
+            .OfType<ParsedTle>()
             .ToList();
 
         return meosarTles;
