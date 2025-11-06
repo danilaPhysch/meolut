@@ -35,7 +35,6 @@ public class TleDownloadService(
             catch (Exception ex) when (
                 ex is not OutOfMemoryException &&
                 ex is not StackOverflowException &&
-                ex is not ThreadAbortException &&
                 ex is not AccessViolationException)
             {
                 logger.LogError(ex, "Error in {ClassName}", nameof(TleDownloadService));
