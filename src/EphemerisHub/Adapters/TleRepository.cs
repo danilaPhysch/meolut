@@ -76,12 +76,25 @@ public class TleRepository(AppDbContext appDbContext) : ITleRepository
 
     public async Task<Dictionary<string, DateTime?>> GetLastUpdateBySystem(CancellationToken cancellationToken = default)
     {
+        var gpsMax = await appDbContext.GpsTle.AnyAsync(cancellationToken) 
+            ? await appDbContext.GpsTle.MaxAsync(t => (DateTime?)t.Time, cancellationToken) 
+            : null;
+        var galileoMax = await appDbContext.GalileoTle.AnyAsync(cancellationToken) 
+            ? await appDbContext.GalileoTle.MaxAsync(t => (DateTime?)t.Time, cancellationToken) 
+            : null;
+        var glonassMax = await appDbContext.GlonassTle.AnyAsync(cancellationToken) 
+            ? await appDbContext.GlonassTle.MaxAsync(t => (DateTime?)t.Time, cancellationToken) 
+            : null;
+        var beidouMax = await appDbContext.BeidouTle.AnyAsync(cancellationToken) 
+            ? await appDbContext.BeidouTle.MaxAsync(t => (DateTime?)t.Time, cancellationToken) 
+            : null;
+        
         return new Dictionary<string, DateTime?>
         {
-            ["GPS"] = await appDbContext.GpsTle.MaxAsync(t => (DateTime?)t.Time, cancellationToken),
-            ["Galileo"] = await appDbContext.GalileoTle.MaxAsync(t => (DateTime?)t.Time, cancellationToken),
-            ["GLONASS"] = await appDbContext.GlonassTle.MaxAsync(t => (DateTime?)t.Time, cancellationToken),
-            ["BeiDou"] = await appDbContext.BeidouTle.MaxAsync(t => (DateTime?)t.Time, cancellationToken)
+            ["GPS"] = gpsMax,
+            ["Galileo"] = galileoMax,
+            ["GLONASS"] = glonassMax,
+            ["BeiDou"] = beidouMax
         };
     }
 

@@ -39,17 +39,19 @@ public class TleService(ITleRepository tleRepository) : ITleService
             .ToList();
     }
 
-    public Task<IReadOnlyList<SystemDto>> GetSystems(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<SystemDto>> GetSystems(CancellationToken cancellationToken = default)
     {
+        var counts = await tleRepository.GetRecordCountsBySystem(cancellationToken);
+        
         var systems = new List<SystemDto>
         {
-            new() { Name = "GPS", Description = "Global Positioning System (USA)", SatelliteCount = 0 },
-            new() { Name = "GLONASS", Description = "Global Navigation Satellite System (Russia)", SatelliteCount = 0 },
-            new() { Name = "Galileo", Description = "Galileo (European Union)", SatelliteCount = 0 },
-            new() { Name = "BeiDou", Description = "BeiDou Navigation Satellite System (China)", SatelliteCount = 0 }
+            new() { Name = "GPS", Description = "Global Positioning System (USA)", SatelliteCount = counts.GetValueOrDefault("GPS", 0) },
+            new() { Name = "GLONASS", Description = "Global Navigation Satellite System (Russia)", SatelliteCount = counts.GetValueOrDefault("GLONASS", 0) },
+            new() { Name = "Galileo", Description = "Galileo (European Union)", SatelliteCount = counts.GetValueOrDefault("Galileo", 0) },
+            new() { Name = "BeiDou", Description = "BeiDou Navigation Satellite System (China)", SatelliteCount = counts.GetValueOrDefault("BeiDou", 0) }
         };
         
-        return Task.FromResult<IReadOnlyList<SystemDto>>(systems);
+        return systems;
     }
 
     public async Task<StatusDto> GetStatus(CancellationToken cancellationToken = default)
@@ -67,7 +69,7 @@ public class TleService(ITleRepository tleRepository) : ITleService
             };
         }
 
-        var lastDownload = lastUpdates.Values.Where(v => v.HasValue).Max();
+        var lastDownload = lastUpdates.Values.Where(v => v.HasValue).DefaultIfEmpty().Max();
 
         return new StatusDto
         {
