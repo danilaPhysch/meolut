@@ -21,7 +21,7 @@ services:
   ephemerishub:
     build:
       context: .
-      dockerfile: Dockerfile.prebuild
+      dockerfile: Dockerfile
     image: ephemerishub:latest
     container_name: ephemerishub_api
     environment:

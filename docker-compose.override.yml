@@ -1,0 +1,9 @@
+# Docker Compose override for environments with SSL/NuGet certificate issues
+# This file is used automatically by docker compose if present in the same directory
+# 
+# To use standard Dockerfile instead, rename or delete this file
+
+services:
+  ephemerishub:
+    build:
+      dockerfile: Dockerfile.prebuild

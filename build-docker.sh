@@ -22,9 +22,7 @@ if grep -q "NU1301\|SSL connection could not be established" /tmp/docker-build.l
     
     # Build the application on the host first
     echo "Building application on host..."
-    cd src/EphemerisHub
-    dotnet publish -c Release
-    cd ../..
+    dotnet publish -c Release -o src/EphemerisHub/bin/Release/net9.0/publish src/EphemerisHub/EphemerisHub.csproj
     
     # Build Docker image with pre-built binaries
     echo ""
