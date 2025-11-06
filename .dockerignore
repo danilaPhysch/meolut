@@ -1,0 +1,49 @@
+# Build artifacts (but allow publish directory for Docker build)
+**/bin/
+!**/bin/Release/net9.0/publish/
+**/obj/
+**/out/
+**/logs/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test coverage
+*.coverage
+*.coverlet.json
+TestResults/
+
+# Secrets and local configuration
+*.secrets.json
+secrets.json
+appsettings.Development.json
+appsettings.Local.json
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+LICENSE
+*.md
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Other
+*.swp
+*~
+*.bak
+*.tmp
+*.orig
+.DS_Store
+Thumbs.db

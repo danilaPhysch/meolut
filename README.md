@@ -57,15 +57,44 @@ Unlike full ephemerides (RINEX/SP3 format), TLE is:
 
 ### Prerequisites
 
-- .NET 9 SDK
-- PostgreSQL 16+
-- Docker (optional, for local development)
+- .NET 9 SDK (for local development)
+- Docker and Docker Compose (for containerized deployment)
+- PostgreSQL 16+ (if running without Docker)
 
-### Local Development with Docker
+### Running with Docker Compose (Recommended)
+
+The easiest way to run the entire application stack:
+
+1. Build and start all services:
+   ```bash
+   ./build-docker.sh  # Build the Docker image
+   docker compose up -d
+   ```
+
+2. Check service status:
+   ```bash
+   docker compose ps
+   docker compose logs -f ephemerishub
+   ```
+
+3. Access the API at `http://localhost:5101`
+
+4. Stop services:
+   ```bash
+   docker compose down
+   ```
+
+The docker-compose setup includes:
+- **PostgreSQL 16** database with persistent storage
+- **EphemerisHub API** service with automatic restart
+- Health checks for both services
+- Dedicated Docker network
+
+### Local Development without Docker
 
 1. Start PostgreSQL:
    ```bash
-   docker compose up -d
+   docker compose up -d postgres
    ```
 
 2. Apply database migrations:
@@ -80,6 +109,22 @@ Unlike full ephemerides (RINEX/SP3 format), TLE is:
    ```
 
 The API will be available at `http://localhost:5101`
+
+### Building Docker Image Manually
+
+If you need to build just the Docker image:
+
+```bash
+# Standard build (multi-stage)
+docker build -t ephemerishub:latest .
+
+# If you encounter SSL/NuGet issues, use the build script
+./build-docker.sh
+
+# Or manually with pre-build method
+dotnet publish -c Release src/EphemerisHub/EphemerisHub.csproj
+docker build -t ephemerishub:latest -f Dockerfile.prebuild .
+```
 
 ### Configuration
 
@@ -254,15 +299,70 @@ dotnet test
 
 ## Production Deployment
 
-For production deployment:
+### Docker Deployment (Recommended)
+
+The application is fully containerized and ready for production deployment:
+
+1. **Build the Docker image:**
+   ```bash
+   ./build-docker.sh
+   ```
+
+2. **Configure production settings:**
+   Create a `.env` file or set environment variables:
+   ```bash
+   ASPNETCORE_ENVIRONMENT=Production
+   ConnectionStrings__Postgres=Host=your-db-host;Port=5432;Database=ephemerishub;Username=your-user;Password=your-password
+   ```
+
+3. **Deploy with Docker Compose:**
+   ```bash
+   docker compose up -d
+   ```
+
+4. **Or deploy to container orchestration platforms:**
+   - Kubernetes: Create deployment and service manifests
+   - Docker Swarm: Use `docker stack deploy`
+   - AWS ECS, Azure Container Instances, Google Cloud Run, etc.
+
+5. **Configure monitoring:**
+   - Health check endpoint: `/health`
+   - Application logs: Available in container logs (`docker compose logs`)
+   - Set up log aggregation (ELK, Splunk, CloudWatch, etc.)
+
+### Manual Deployment
+
+For traditional deployment without containers:
 
 1. Set up a PostgreSQL database
-2. Configure connection string and settings
-3. Run migrations: `dotnet ef database update`
-4. Deploy the application
-5. Configure TLE source URLs if different from default
-6. Set up monitoring for health checks
-7. Configure log aggregation
+2. Configure connection string and settings in `appsettings.Production.json`
+3. Build the application: `dotnet publish -c Release`
+4. Deploy the published files to your server
+5. Run migrations: `dotnet ef database update`
+6. Configure TLE source URLs if different from default
+7. Set up monitoring for health checks
+8. Configure log aggregation
+9. Set up a reverse proxy (nginx, Apache) if needed
+10. Configure systemd service or similar for process management
+
+### Environment Variables
+
+Key environment variables for containerized deployment:
+
+- `ASPNETCORE_ENVIRONMENT`: Set to `Production`
+- `ConnectionStrings__Postgres`: PostgreSQL connection string
+- `TleLoader__ExecuteInterval`: TLE download interval (default: 00:15:00)
+- `DataCleanup__RetentionDays`: Data retention in days (default: 730)
+- `DataCleanup__CleanupHour`: Hour to run cleanup (default: 1)
+
+### Docker Image
+
+The Docker image:
+- Based on `mcr.microsoft.com/dotnet/aspnet:9.0`
+- Size: ~233MB
+- Exposes port 8080
+- Includes health check
+- Logs to `/app/logs` directory (can be mounted as volume)
 
 ## License
 
