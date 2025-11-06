@@ -16,6 +16,7 @@ bld/
 [Bb]inaries/
 [Oo]ut/
 [Ll]ogs/
+logs/
 
 # Rider
 .idea/
