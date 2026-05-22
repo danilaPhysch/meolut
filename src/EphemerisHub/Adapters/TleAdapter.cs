@@ -12,7 +12,7 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
     public async Task<IReadOnlyList<ParsedTle>> GetTles(CancellationToken cancellationToken = default)
     {
         var urls = tleSettings.Uris.ToList();
-        var semaphore = new SemaphoreSlim(Math.Max(1, Math.Min(MaxParallelDownloads, urls.Count)));
+        using var semaphore = new SemaphoreSlim(Math.Max(1, Math.Min(MaxParallelDownloads, urls.Count)));
         var downloadTasks = urls.Select(async url =>
         {
             await semaphore.WaitAsync(cancellationToken);
@@ -24,7 +24,7 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
             {
                 semaphore.Release();
             }
-        });
+        }).ToList();
         var allTles = (await Task.WhenAll(downloadTasks)).SelectMany(x => x).ToList();
 
         var meosarTles = allTles
@@ -63,8 +63,7 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
                 {
                     if (currentLine1 is not null)
                     {
-                        skippedLines++;
-                        logger.LogWarning("Incomplete TLE in {Url}: missing line 2 for line 1 [{Line1}]", url, currentLine1);
+                        LogMissingLine2(url, currentLine1, "Incomplete TLE", ref skippedLines);
                     }
 
                     currentLine1 = line;
@@ -96,6 +95,7 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
                         }
                     }
                     catch (Exception ex) when (
+                        ex is not OperationCanceledException &&
                         ex is not OutOfMemoryException &&
                         ex is not StackOverflowException &&
                         ex is not AccessViolationException)
@@ -111,8 +111,7 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
 
                 if (currentLine1 is not null)
                 {
-                    skippedLines++;
-                    logger.LogWarning("Discarding incomplete TLE in {Url}: missing line 2 for line 1 [{Line1}]", url, currentLine1);
+                    LogMissingLine2(url, currentLine1, "Discarding incomplete TLE", ref skippedLines);
                     currentLine1 = null;
                 }
 
@@ -121,8 +120,7 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
 
             if (currentLine1 is not null)
             {
-                skippedLines++;
-                logger.LogWarning("Discarding incomplete trailing TLE in {Url}: missing line 2 for line 1 [{Line1}]", url, currentLine1);
+                LogMissingLine2(url, currentLine1, "Discarding incomplete trailing TLE", ref skippedLines);
             }
 
             logger.LogInformation(
@@ -134,10 +132,6 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
 
             return parsedTles;
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
         catch (HttpRequestException ex)
         {
             logger.LogError(ex, "HTTP error fetching {Url}: {ExMessage}", url, ex.Message);
@@ -148,6 +142,12 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
             logger.LogError(ex, "IO error fetching {Url}: {ExMessage}", url, ex.Message);
             return [];
         }
+    }
+
+    private void LogMissingLine2(Uri url, string line1, string context, ref int skippedLines)
+    {
+        skippedLines++;
+        logger.LogWarning("{Context} in {Url}: missing line 2 for line 1 [{Line1}]", context, url, line1);
     }
 
     private static async Task<string?> ReadNonEmptyLine(StreamReader reader, CancellationToken cancellationToken)
