@@ -23,7 +23,7 @@ public class TleDownloadService(
 
             try
             {
-                var tles = await tleAdapter.GetTles();
+                var tles = await tleAdapter.GetTles(stoppingToken);
                 var tlesForSaving = tles.Select(x => new Tle { CsSatNum = x.CsSatNum, Time = now, Line1 = x.Line1, Line2 = x.Line2, Name = x.Name }.MapToEntity()).ToList();
                 await tleRepository.SaveTles(tlesForSaving, stoppingToken);
                 logger.LogInformation("Loaded TLE: {Count}", tles.Count);

@@ -4,5 +4,5 @@ namespace EphemerisHub.Application;
 
 public interface ITleAdapter
 {
-    public Task<IReadOnlyList<ParsedTle>> GetTles();
+    public Task<IReadOnlyList<ParsedTle>> GetTles(CancellationToken cancellationToken = default);
 }
