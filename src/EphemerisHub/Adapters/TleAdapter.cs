@@ -48,7 +48,14 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
         logger.LogInformation("Started downloading TLE from {Url}", url);
         try
         {
-            await using var stream = await httpClient.GetStreamAsync(url, cancellationToken);
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, tleSettings.RequestTimeoutSeconds)));
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token);
+            response.EnsureSuccessStatusCode();
+
+            await using var stream = await response.Content.ReadAsStreamAsync(timeoutCts.Token);
             using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: false);
 
             var parsedTles = new List<ParsedTle>();
@@ -57,7 +64,7 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
             string? currentName = null;
             string? currentLine1 = null;
 
-            while (await ReadNonEmptyLine(reader, cancellationToken) is { } line)
+            while (await ReadNonEmptyLine(reader, timeoutCts.Token) is { } line)
             {
                 if (line.StartsWith("1 ", StringComparison.Ordinal))
                 {
@@ -131,6 +138,15 @@ public class TleAdapter(HttpClient httpClient, TleSettings tleSettings, MeosarSa
                 skippedLines);
 
             return parsedTles;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException ex)
+        {
+            logger.LogWarning(ex, "Timeout while fetching {Url}. Timeout: {TimeoutSeconds}s", url, Math.Max(1, tleSettings.RequestTimeoutSeconds));
+            return [];
         }
         catch (HttpRequestException ex)
         {
